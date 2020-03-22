@@ -1,0 +1,34 @@
+<html>
+<head>
+  <title>Rhyme Annotation Tool</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <script src="script.js" type="text/javascript"></script>
+  <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+<body>
+<h1>RhyAnT: Rhyme Annotation Tool</h1>
+<div style="width:80%;background-color: lavender; padding: 10px; margin: 10px;">
+<p>
+This Rhyme Annotation Tool allows you to annotate rhymes in poems interactively, following the inline format described in  <a href="https://digling.org/evobib/evobib.py?key=List2019c&display=table">List et al. (2019).</a>. To get started, just paste a poem in text form (separate stanzas by empty lines) into the text field on the left and press ESCAPE. This will render the poem in interactive mode on the right. In order to annotate your poem, select a rhyme from either the Active Rhymes in the panel on the right, or choose a New Rhyme by clicking it. Then go back to the poem and click on all those words which you want to assign to the same rhyme pattern. You will see that at the same time while you are editing the rhymes interactively, they will also be modified in the text field on the left.
+</p>
+<p>If you use this tool in this beta stadium, please quote it as follows:<br><br>
+<blockquote>List, Johann-Mattis (2020): <i>RhyAnT: A tool for interactive rhyme annotation</i>. Version 0.1. Jena: Max Planck Institue for the Science of Human History. URL: <a href="https://digling.org/calc/rhyant/">https://digling.org/calc/rhyant/</a></blockquote></p>
+</div>
+<div id="main">
+  <div id="textinput" class="panel">
+    <h2>Paste your text here to get started</h2>
+    <ul>
+      <li>Follow the format specifications provided in <a href="https://digling.org/evobib/evobib.py?key=List2019c&display=table">List et al. (2019).</a></li>
+      <li>Type ESCAPE to render the text for editing it interactively.</li>
+    </ul>
+    <textarea id="input" onkeydown="loadText(event);" rows="20" cols="50"></textarea>
+  </div>
+  <div id="poem" class="panel">
+    <h2>Inspect and annotate your poem</h2>
+  </div>
+</div>
+<div id="settings" class="menu">
+  <h2>Settings</h2>
+</div>
+</body>
+</html>

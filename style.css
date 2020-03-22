@@ -1,0 +1,58 @@
+.word {
+  background-color: white;
+  border: 1px solid gray;
+  padding: 3px;
+  display: table-cell;
+  margin: 3px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.refrain {
+  background-color: lightyellow!important;
+  border: 2px solid black!important;
+}
+
+.stanza {
+  border: 2px solid gray;
+  background-color: lightblue;
+  padding: 0px;
+  margin-top: 5px;
+}
+
+.line {
+  display: flex;
+}
+
+#main {
+  padding: 10px;
+  display: flex;
+}
+
+.panel {
+  display: table-cell;
+  margin-right: 20px;
+  padding: 10px;
+  border: 2px dotted gray;
+  background-color: lightcoral;
+  border-radius: 10px;
+  box-shadow: 2 1 0 0;
+}
+
+.menu {
+  display: table-cell;
+  position: fixed;
+  right: 10;
+  top: 10;
+  padding: 10px;
+  border: 2px dotted gray;
+  background-color: lightcoral;
+  border-radius: 10px;
+  box-shadow: 2 1 0 0;
+}
+
+.meta {
+  background-color: lightgray;
+}
+
+
