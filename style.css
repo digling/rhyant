@@ -1,11 +1,11 @@
 .word {
   background-color: white;
-  border: 1px solid gray;
+  border: 1px solid lightgray;
   padding: 3px;
   display: table-cell;
   margin: 3px;
-  border-radius: 10px;
   cursor: pointer;
+  box-shadow: 2px 1px gray;
 }
 
 .refrain {
@@ -15,13 +15,27 @@
 
 .stanza {
   border: 2px solid gray;
-  background-color: lightblue;
+  background-color: gainsboro;
   padding: 0px;
   margin-top: 5px;
 }
 
 .line {
   display: flex;
+  flex-wrap: wrap;
+}
+
+.sline{
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.settings {
+  border: 2px solid gray;
+  background-color: gainsboro;
+  padding: 0px;
+  margin-top: 5px;
+
 }
 
 #main {
@@ -36,7 +50,10 @@
   border: 2px dotted gray;
   background-color: lightcoral;
   border-radius: 10px;
-  box-shadow: 2 1 0 0;
+  box-shadow: 2px 4px gray;
+  resize: both;
+  overflow: auto;
+
 }
 
 .menu {
@@ -48,7 +65,10 @@
   border: 2px dotted gray;
   background-color: lightcoral;
   border-radius: 10px;
-  box-shadow: 2 1 0 0;
+  box-shadow: 2px 4px gray;
+  resize: both;
+  overflow: auto;
+
 }
 
 .meta {

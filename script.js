@@ -89,7 +89,7 @@ var POEM = {
     "JJJ", "KKK", "LLL", "NNN", "OOO", "PPP", "QQQ", "RRR", "SSS", "TTT",
     "UUU", "VVV", "WWW", "XXX", "YYY", "ZZZ"
   ],
-  "stopmarks": ",;.\"'",
+  "stopmarks": ",;.\"。，、'",
   "activerhymes": [],
   "currentrhyme": '',
   "text" : ""
@@ -149,7 +149,7 @@ function toggleRhyme(node, idx, jdx, kdx) {
 function displaySettings(){
   var display, i, j, rhyme;
   display = '<h2>Settings</h2><h3>Active Rhymes</h3>';
-  display += '<div class="stanza"><div class="line">';
+  display += '<div class="settings"><div class="sline">';
   for (i=0; i<POEM['activerhymes'].length; i++){
     rhyme=POEM['activerhymes'][i];
     display += '<span style="padding-left: 10px; padding-right: 10px;" data-rhyme="'+rhyme+'" onclick="currentRhyme(this);" class="word rhyming rhyme-'+rhyme+'"> '+
@@ -173,7 +173,7 @@ function displaySettings(){
 function displayPoem(){
   var display, key, i, j, k, refrain, word, rhyme, rhymet, rymes, classes;
   var color, border, borderstyle;
-  var text, refrain_prefix, text_line;
+  var text, refrain_prefix, text_line, slashed;
   text = '';
   display = '<h2>Inspect and annotate your poem</h2><h3>Metadata</h3><table class="meta">';
   for (key in POEM['meta']) {
@@ -206,11 +206,20 @@ function displayPoem(){
           }
           rhymet = ' rhyming rhyme-'+rhyme;
           rhymes = '<sup>'+rhyme+'</sup>';
-          if (word.startsWith('-')){
-            text_line += '['+rhyme+']'+POEM['poem'][i][j]['oline'][k];
+          if (POEM['poem'][i][j]['pline'][k]) {
+            slashed = '/'+POEM['poem'][i][j]['pline'][k];
           }
           else {
-            text_line += ' ['+rhyme+']'+POEM['poem'][i][j]['oline'][k];
+            slashed = '';
+          }
+          if (word.startsWith('-')){
+            text_line += '['+rhyme+slashed+']'+POEM['poem'][i][j]['oline'][k];
+          }
+          else {
+            text_line += ' ['+rhyme+slashed+']'+POEM['poem'][i][j]['oline'][k];
+          }
+          if (POEM['poem'][i][j]['pline'][k]) {
+            word = POEM['poem'][i][j]['pline'][k];
           }
         }
         else {
@@ -267,18 +276,19 @@ function styleRhymes(){
 function getBrackets(word){
   var i, letter;
   var new_word;
-  var inbracket = false;
-  new_word = [['', '', '']];
+  var inbracket = false, inslash = false;
+  new_word = [['', '', '', '']];
   for (i=0; i<word.length; i++) {
     letter = word[i];
     if (letter == '[') {
       inbracket = true;
       if (i != 0) {
-        new_word.push(['-', '', ''])
+        new_word.push(['-', '', '', ''])
       }
     }
     else if (letter == ']') {
       inbracket = false;
+      inslash = false;
     }
     else if (!inbracket) {
       if (POEM['stopmarks'].indexOf(letter) == -1){
@@ -287,7 +297,17 @@ function getBrackets(word){
       new_word[(new_word.length-1)][2] += letter;
     }
     else {
-      new_word[(new_word.length-1)][1] += letter;
+      if (letter == '/') {
+        inslash = true;
+      }
+      else {
+        if (inslash) {
+          new_word[(new_word.length-1)][3] += letter;
+        }
+        else {
+          new_word[(new_word.length-1)][1] += letter;
+        }
+      }
     }
   }
   return new_word;
@@ -361,7 +381,8 @@ function processText(text){
         "text": line.trim(), 
         "rhymes": [], 
         "line": [],
-        "oline": []
+        "oline": [],
+        "pline": []
       };
 
       rhymelines = getRhymes(line.trim().split(' '));
@@ -369,6 +390,7 @@ function processText(text){
         poem[stanza][number]["line"].push(rhymelines[j][0]);
         poem[stanza][number]["rhymes"].push(rhymelines[j][1]);
         poem[stanza][number]["oline"].push(rhymelines[j][2]);
+        poem[stanza][number]["pline"].push(rhymelines[j][3]);
       }
       number += 1;
     }
