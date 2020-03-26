@@ -171,6 +171,8 @@ function displaySettings(){
     }
   }
   display += '</div></div>';
+  display += '<h3>Options</h3>';
+  display += '<div><input type="button" value="DOWNLOAD" onclick="downloadString()"/></div>';
   document.getElementById('settings').innerHTML = display;
 }
 
@@ -307,7 +309,7 @@ function displayLine(idx, jdx, spread) {
     }
     display.push('<span title="click to rhyme, double-click to split" id="word-'+idx+'-'+jdx+'-'+k+'" onclick="toggleRhyme(this,'+idx+','+jdx+','+k+')"'+
       ' ondblclick="spreadWord(this, event,'+idx+','+jdx+','+k+')"'+
-      //' oncontextmenu="spreadWord(this, event,'+idx+','+jdx+','+k+')"'+
+      ' oncontextmenu="spreadWord(this, event,'+idx+','+jdx+','+k+')"'+
       ' class="word '+rhymet+'" data-rhyme="'+rhyme+'">'+
       word+rhymes+'</span>');
     if (spread && k<stanza['line'].length-1) {
@@ -523,4 +525,17 @@ function processText(text){
   return {'poem': poem, 'meta': meta};
 }
 
+/* from https://gist.github.com/danallison/3ec9d5314788b337b682 */
+function downloadString() {
+  var blob = new Blob([POEM['text']], { type: 'txt' });
+  var a = document.createElement('a');
+  a.download = 'poem.txt';
+  a.href = URL.createObjectURL(blob);
+  a.dataset.downloadurl = ['txt', a.download, a.href].join(':');
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(a.href); }, 1500);
+}
 
