@@ -89,24 +89,28 @@ var POEM = {
     "JJJ", "KKK", "LLL", "NNN", "OOO", "PPP", "QQQ", "RRR", "SSS", "TTT",
     "UUU", "VVV", "WWW", "XXX", "YYY", "ZZZ"
   ],
-  "stopmarks": ",;.\"。，、'",
+  "stopmarks": ",;.\"!?—。，、':",
   "activerhymes": [],
   "currentrhyme": '',
-  "text" : ""
+  "text" : "",
+  "heading": ''
 };
 
 /* function loads the text and displays it */
-function loadText(event){
-  if (event.keyCode == 27) {
+function loadPoem(event, textID, poemID, heading){
+  if (event.keyCode == 27 || event =='') {
     var text, poem, display, i, j, k, word, rhyme, refrain, rhymes, colors, rhymet, classes;
-    text = document.getElementById('input').value;
+    text = document.getElementById(textID).value;
     poem = processText(text);
     POEM['poem'] = poem['poem'];
     POEM['meta'] = poem['meta'];
     POEM['text'] = text;
-    displayPoem();
-    displaySettings();
-    styleRhymes();
+    displayPoem(heading);
+    if (event != ''){
+      displaySettings();
+    }
+    document.getElementById(poemID).innerHTML = POEM['display'];
+    styleRhymes()
   }
   else {
     return;
@@ -141,8 +145,9 @@ function toggleRhyme(node, idx, jdx, kdx) {
   }
   displayPoem();
   displaySettings();
-  styleRhymes();
   document.getElementById('input').value = POEM['text'];
+  document.getElementById('poem').innerHTML = POEM['display'];
+  styleRhymes();
 }
 
 /* display the settings and show active rhymes */
@@ -169,13 +174,168 @@ function displaySettings(){
   document.getElementById('settings').innerHTML = display;
 }
 
+/* spread a line to allow to join two words into one */
+function spreadLine(idx, jdx, spread) {
+  var display, texts;
+  if (spread == 0) {
+    displays = displayLine(idx, jdx, 1);
+    spread = 1;
+  }
+  else {
+    displays = displayLine(idx, jdx, 0);
+    spread = 0;
+  }
+  /* check for line that is already spread */
+  
+  text = '<span id="toggleline_'+idx+'_'+jdx+'"'+
+    ' title="click to join words" class="handle"'+
+    ' onclick="spreadLine('+idx+','+jdx+','+spread+');">◌</span>';
+  text += displays[0];
+
+  document.getElementById('line_'+idx+'_'+jdx).innerHTML = text;
+  styleRhymes();
+}
+
+/* spread a word */
+function spreadWord(node, event, idx, jdx, kdx) {
+  event.preventDefault();
+  node.onclick = function (){return;};
+  node.oncontextmenu = function (){return;};
+
+  var i;
+  var stanza = POEM['poem'][idx][jdx];
+  var word = stanza['oline'][kdx];
+  var text = '';
+  for (i=0; i<word.length; i++) {
+    text += '<span class="letter" '+
+      'onclick="splitWord('+idx+','+jdx+','+kdx+','+i+')" '+
+      'title="click to split">'+word[i]+'</span>';
+  }
+  document.getElementById('word-'+idx+'-'+jdx+'-'+kdx).innerHTML = text;
+}
+
+/* split a word */
+function splitWord(idx, jdx, kdx, sidx) {
+  var word = POEM['poem'][idx][jdx]['oline'][kdx];
+  if (sidx < word.length-1 && sidx != 0){
+    var wordA = word.slice(0, sidx);
+    var wordB = word.slice(sidx, word.length);
+    if (wordB.startsWith('_')) {
+      wordB = wordB.slice(1, wordB.length);
+    }
+    POEM['poem'][idx][jdx]['oline'][kdx] = wordA;
+    POEM['poem'][idx][jdx]['line'][kdx] = wordA;
+    POEM['poem'][idx][jdx]['oline'].splice(kdx+1, 0, wordB);
+    POEM['poem'][idx][jdx]['line'].splice(kdx+1, 0, '-'+wordB);
+    POEM['poem'][idx][jdx]['pline'].splice(kdx+1, 0, '');
+    POEM['poem'][idx][jdx]['rhymes'].splice(kdx+1, 0, '');
+  }
+  displayPoem(POEM['heading']);
+  displaySettings();
+  document.getElementById('input').value = POEM['text'];
+  document.getElementById('poem').innerHTML = POEM['display'];
+  styleRhymes();
+
+}
+
+/* join words function */
+function joinWords(idx, jdx, kdx) {
+  var stanza = POEM['poem'][idx][jdx];
+  var joiner = '_';
+  if (stanza['line'][kdx].startsWith('-')){
+    joiner = '';
+  }
+  stanza['line'][(kdx-1)] += joiner+stanza['line'][kdx];
+  stanza['oline'][(kdx-1)] += joiner+stanza['oline'][kdx];
+
+  stanza['line'].splice(kdx, 1);
+  stanza['oline'].splice(kdx, 1);
+  stanza['pline'].splice(kdx, 1);
+  stanza['rhymes'].splice(kdx, 1);
+
+  displayPoem(POEM['heading']);
+  displaySettings();
+  document.getElementById('input').value = POEM['text'];
+  document.getElementById('poem').innerHTML = POEM['display'];
+  styleRhymes();
+
+}
+
+/* display line in poem */
+function displayLine(idx, jdx, spread) {
+  var k, word, rhyme, rhymet, rhymes, slashed;
+  
+  var stanza = POEM['poem'][idx][jdx];
+  var text_line = '', display = [];
+
+  for (k=0; k<stanza['line'].length; k++) {
+    word = stanza['line'][k];
+    rhyme = stanza['rhymes'][k];
+
+    if (rhyme) {
+      if (POEM['activerhymes'].indexOf(rhyme) == -1) {
+        POEM['activerhymes'].push(rhyme);
+      }
+      rhymet = ' rhyming rhyme-'+rhyme;
+      rhymes = '<sup>'+rhyme+'</sup>';
+      if (stanza['pline'][k]) {
+        slashed = '/'+stanza['pline'][k];
+      }
+      else {
+        slashed = '';
+      }
+      if (word.startsWith('-')){
+        text_line += '['+rhyme+slashed+']'+stanza['oline'][k];
+      }
+      else {
+        text_line += ' ['+rhyme+slashed+']'+stanza['oline'][k];
+      }
+      if (stanza['pline'][k]) {
+        word = stanza['pline'][k];
+      }
+    }
+    else {
+      rhymet = '';
+      rhymes = '';
+      word = stanza['oline'][k];
+      if (stanza['line'][k].startsWith('-')) {
+        text_line += word;
+      }
+      else {
+        text_line += ' '+word;
+      }
+    }
+    display.push('<span title="click to rhyme, double-click to split" id="word-'+idx+'-'+jdx+'-'+k+'" onclick="toggleRhyme(this,'+idx+','+jdx+','+k+')"'+
+      ' ondblclick="spreadWord(this, event,'+idx+','+jdx+','+k+')"'+
+      //' oncontextmenu="spreadWord(this, event,'+idx+','+jdx+','+k+')"'+
+      ' class="word '+rhymet+'" data-rhyme="'+rhyme+'">'+
+      word+rhymes+'</span>');
+    if (spread && k<stanza['line'].length-1) {
+      display.push(
+	'<span title="click to join words" '+
+	'onclick="joinWords('+idx+','+jdx+','+(k+1)+')" '+
+	'class="joinwords">+</span>');
+    }
+  }
+
+  return [display.join(' '), text_line];
+}
+
 /* function serves to display the poem */
-function displayPoem(){
+function displayPoem(heading){
   var display, key, i, j, k, refrain, word, rhyme, rhymet, rymes, classes;
   var color, border, borderstyle;
   var text, refrain_prefix, text_line, slashed;
+  var display_line;
+  
+  POEM['heading'] = heading;
+
   text = '';
-  display = '<h2>Inspect and annotate your poem</h2><h3>Metadata</h3><table class="meta">';
+  display = '';
+  if (heading){
+    display = '<h2>'+heading+'</h2>';
+  }
+  display += '<h3>Metadata</h3><table class="meta">';
   for (key in POEM['meta']) {
     display += '<tr><th>'+key+'</th><td>'+POEM['meta'][key]+'</td></th></tr>';
     text += '@'+key+':'+POEM['meta'][key]+'\n';
@@ -195,54 +355,18 @@ function displayPoem(){
     display += '<div id="stanza_'+i+'" title="Stanza '+i+'" class="stanza'+refrain+'">';
     for (j=1; j<=Object.keys(POEM['poem'][i]).length; j++) {
       text_line = '';
-      display += '<div class="line" id="line_'+j+'" data-text="'+POEM['poem'][i][j]['text']+'">';
-      for (k=0; k<POEM['poem'][i][j]['line'].length; k++) {
-        word = POEM['poem'][i][j]['line'][k];
-        rhyme = POEM['poem'][i][j]['rhymes'][k];
-
-        if (rhyme) {
-          if (POEM['activerhymes'].indexOf(rhyme) == -1) {
-            POEM['activerhymes'].push(rhyme);
-          }
-          rhymet = ' rhyming rhyme-'+rhyme;
-          rhymes = '<sup>'+rhyme+'</sup>';
-          if (POEM['poem'][i][j]['pline'][k]) {
-            slashed = '/'+POEM['poem'][i][j]['pline'][k];
-          }
-          else {
-            slashed = '';
-          }
-          if (word.startsWith('-')){
-            text_line += '['+rhyme+slashed+']'+POEM['poem'][i][j]['oline'][k];
-          }
-          else {
-            text_line += ' ['+rhyme+slashed+']'+POEM['poem'][i][j]['oline'][k];
-          }
-          if (POEM['poem'][i][j]['pline'][k]) {
-            word = POEM['poem'][i][j]['pline'][k];
-          }
-        }
-        else {
-          rhymet = '';
-          rhymes = '';
-          word = POEM['poem'][i][j]['oline'][k];
-          if (POEM['poem'][i][j]['line'][k].startsWith('-')) {
-            text_line += word;
-          }
-          else {
-            text_line += ' '+word;
-          }
-        }
-        display += '<span id="word-'+i+'-'+j+'-'+k+'" onclick="toggleRhyme(this,'+i+','+j+','+k+')"'+
-          ' class="word '+rhymet+'" data-rhyme="'+rhyme+'">' +
-          word+rhymes+'</span>';
-      }
+      display += '<div class="line" id="line_'+i+'_'+j+'" data-text="'+POEM['poem'][i][j]['text']+'">';
+      display += '<span id="toggleline_'+i+'_'+j+'"'+
+        ' title="click to join words" class="handle"'+
+	' onclick="spreadLine('+i+','+j+',0);">◌</span>';
+      display_line = displayLine(i, j);
+      display += display_line[0];
       display += '</div>';
-      text += refrain_prefix+text_line.trim()+'\n';
+      text += refrain_prefix+display_line[1].trim()+'\n';
     }
     display += '</div>';
   }
-  document.getElementById('poem').innerHTML = display;
+  POEM['display'] = display;
   POEM['text'] = text;
 }
 
@@ -333,7 +457,7 @@ function processText(text){
   var lines, i;
   var meta, poem;
   var stanza;
-  var keyval, keys;
+  var key, val, keys;
   var refrain;
   var number;
   var rhymes, rhymeid, rhymelines;
@@ -349,8 +473,9 @@ function processText(text){
 
     /* keyvalue pairs in format */
     if (line[0] == '@' && line.indexOf(':') != -1) {
-      keyval = line.slice(1, line.length).split(':');
-      meta[keyval[0]] = keyval[1];
+      key = line.slice(1, line.length).split(':')[0].toUpperCase();
+      val = line.split(':').slice(1, line.split(':').length).join(':');
+      meta[key] = val;
     }
     /* new stanza */
     else if (line.trim() == '') {
